@@ -536,7 +536,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<FFTSample>& samples
 						<td class="col1">
 							<span class="image">
 								<!-- MAKE CHANGES HERE: Part 3 Spectrogram -->
-								<img src="output/Part_3/placeholder1.jpg" alt="Spectrogram1" width="100%">
+								<img src="output/Part_3/spec_1.png" alt="Spectrogram1" width="100%">
 								<!-- END CHANGES -->
                             </span>
 						</td>
@@ -551,7 +551,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<FFTSample>& samples
 						<td class="col1">
 							<span class="image">
 								<!-- MAKE CHANGES HERE: Part 3 Spectrogram -->
-								<img src="output/Part_3/placeholder2.jpg" alt="Spectrogram2" width="100%">
+								<img src="output/Part_3/spec_2.png" alt="Spectrogram2" width="100%">
 								<!-- END CHANGES -->
                             </span>
 						</td>
@@ -566,7 +566,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<FFTSample>& samples
 						<td class="col1">
 							<span class="image">
 								<!-- MAKE CHANGES HERE: Part 3 Spectrogram -->
-								<img src="output/Part_3/placeholder3.jpg" alt="Spectrogram3" width="100%">
+								<img src="output/Part_3/spec_3.png" alt="Spectrogram3" width="100%">
 								<!-- END CHANGES -->
                             </span>
 						</td>
@@ -581,7 +581,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<FFTSample>& samples
 						<td class="col1">
 							<span class="image">
 								<!-- MAKE CHANGES HERE: Part 3 Spectrogram -->
-								<img src="output/Part_3/placeholder4.jpg" alt="Spectrogram4" width="100%">
+								<img src="output/Part_3/spec_4.png" alt="Spectrogram4" width="100%">
 								<!-- END CHANGES -->
                             </span>
 						</td>
@@ -596,7 +596,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<FFTSample>& samples
 						<td class="col1">
 							<span class="image">
 								<!-- MAKE CHANGES HERE: Part 3 Spectrogram -->
-								<img src="output/Part_3/placeholder5.jpg" alt="Spectrogram3" width="100%">
+								<img src="output/Part_3/spec_5.png" alt="Spectrogram3" width="100%">
 								<!-- END CHANGES -->
                             </span>
 						</td>
@@ -608,7 +608,20 @@ std::ostream& operator<<(std::ostream& os, const std::vector<FFTSample>& samples
                   <div class="content monospaced">
                      <!-- MAKE CHANGES HERE: Part 3a code -->
                      <pre>
-// Insert your code here
+%% Part 3 - Spectrograms
+%Load files
+[audio_life, fs_life] = audioread('input/Part_3/generated/01-extralife.wav');
+[audio_siren, fs_siren] = audioread('input/Part_3/generated/02-siren1.wav');
+[audio_fruit, fs_fruit] = audioread('input/Part_3/generated/03-fruiteaten.wav');
+[audio_ghost, fs_ghost] = audioread('input/Part_3/generated/04-ghosteaten.wav');
+[audio_death, fs_death] = audioread('input/Part_3/generated/05-pacmandeath.wav');
+
+%Generate spectrograms
+figure; spectrogram(audio_life); title('Spectrogram - Extra Life');
+figure; spectrogram(audio_siren); title('Spectrogram - Siren 1');
+figure; spectrogram(audio_fruit); title('Spectrogram - Fruit Eaten');
+figure; spectrogram(audio_ghost); title('Spectrogram - Ghost Eaten');
+figure; spectrogram(audio_death); title('Spectrogram - Pacman Death');
 					 </pre>
                      <!-- END CHANGES -->
                   </div>
@@ -731,8 +744,46 @@ std::ostream& operator<<(std::ostream& os, const std::vector<FFTSample>& samples
                   <div class="content monospaced">
                      <!-- MAKE CHANGES HERE: Part 4 Siren 2 Code -->
                      <pre>
-// Insert your code for Siren 2 here
-					 </pre>
+%% Part 4 - Sirens
+%Function to generate triangle wave siren
+function y = generate_siren(f0, f1, period, fs, duration)
+    y = [];
+    
+    while length(y) < (fs*duration)
+        %Calculate current frequency
+        curTime = length(y) / fs;
+        phase = mod(curTime, period) / (period/2);
+        if phase < 1
+            f = phase * (f1-f0) + f0;
+        else
+            f = (2 - phase) * (f1-f0) + f0;
+        end
+        
+        %Generate single triangle wave
+        y = [y -1:4/(fs/f):1 1:-4/(fs/f):-1];
+    end
+
+%Load original files
+[audio_siren1, fs_siren1] = audioread('input/Part_4/original/mono/siren1.wav');
+[audio_siren2, fs_siren2] = audioread('input/Part_4/original/mono/siren2.wav');
+[audio_siren3, fs_siren3] = audioread('input/Part_4/original/mono/siren3.wav');
+[audio_siren4, fs_siren4] = audioread('input/Part_4/original/mono/siren4.wav');
+[audio_siren5, fs_siren5] = audioread('input/Part_4/original/mono/siren5.wav');
+
+%Generate spectrograms
+nsc = 1024;
+nov = floor(nsc/2);
+nff = max(256, 2^nextpow2(nsc));
+
+spectrogram(audio_siren5, hamming(nsc), nov, nff, fs_siren5, 'yaxis');
+
+%% Part 4 - Generate siren sound
+%f0, f1, period extracted from spectrograms
+gen_siren2 = generate_siren(375, 1172, 0.768-0.4053, fs_siren2, 6);
+gen_siren3 = generate_siren(421.9, 1359, 0.704-0.3627, fs_siren3, 6);
+gen_siren4 = generate_siren(562.5, 1549, 0.6507-0.3413, fs_siren4, 6);
+gen_siren5 = generate_siren(656.2, 1688, 0.5867-0.2987, fs_siren5, 6);					 
+</pre>
                      <!-- END CHANGES -->
                   </div>
                </div>
@@ -742,8 +793,46 @@ std::ostream& operator<<(std::ostream& os, const std::vector<FFTSample>& samples
                   <div class="content monospaced">
                      <!-- MAKE CHANGES HERE: Part 4 Siren 3 Code -->
                      <pre>
-// Insert your code for Siren 3 here
-					 </pre>
+%% Part 4 - Sirens
+%Function to generate triangle wave siren
+function y = generate_siren(f0, f1, period, fs, duration)
+    y = [];
+    
+    while length(y) < (fs*duration)
+        %Calculate current frequency
+        curTime = length(y) / fs;
+        phase = mod(curTime, period) / (period/2);
+        if phase < 1
+            f = phase * (f1-f0) + f0;
+        else
+            f = (2 - phase) * (f1-f0) + f0;
+        end
+        
+        %Generate single triangle wave
+        y = [y -1:4/(fs/f):1 1:-4/(fs/f):-1];
+    end
+
+%Load original files
+[audio_siren1, fs_siren1] = audioread('input/Part_4/original/mono/siren1.wav');
+[audio_siren2, fs_siren2] = audioread('input/Part_4/original/mono/siren2.wav');
+[audio_siren3, fs_siren3] = audioread('input/Part_4/original/mono/siren3.wav');
+[audio_siren4, fs_siren4] = audioread('input/Part_4/original/mono/siren4.wav');
+[audio_siren5, fs_siren5] = audioread('input/Part_4/original/mono/siren5.wav');
+
+%Generate spectrograms
+nsc = 1024;
+nov = floor(nsc/2);
+nff = max(256, 2^nextpow2(nsc));
+
+spectrogram(audio_siren5, hamming(nsc), nov, nff, fs_siren5, 'yaxis');
+
+%% Part 4 - Generate siren sound
+%f0, f1, period extracted from spectrograms
+gen_siren2 = generate_siren(375, 1172, 0.768-0.4053, fs_siren2, 6);
+gen_siren3 = generate_siren(421.9, 1359, 0.704-0.3627, fs_siren3, 6);
+gen_siren4 = generate_siren(562.5, 1549, 0.6507-0.3413, fs_siren4, 6);
+gen_siren5 = generate_siren(656.2, 1688, 0.5867-0.2987, fs_siren5, 6);					 
+</pre>
                      <!-- END CHANGES -->
                   </div>
                </div> 			   
@@ -753,8 +842,46 @@ std::ostream& operator<<(std::ostream& os, const std::vector<FFTSample>& samples
                   <div class="content monospaced">
                      <!-- MAKE CHANGES HERE: Part 4 Siren 4 Code -->
                      <pre>
-// Insert your code for Siren 4 here
-					 </pre>
+%% Part 4 - Sirens
+%Function to generate triangle wave siren
+function y = generate_siren(f0, f1, period, fs, duration)
+    y = [];
+    
+    while length(y) < (fs*duration)
+        %Calculate current frequency
+        curTime = length(y) / fs;
+        phase = mod(curTime, period) / (period/2);
+        if phase < 1
+            f = phase * (f1-f0) + f0;
+        else
+            f = (2 - phase) * (f1-f0) + f0;
+        end
+        
+        %Generate single triangle wave
+        y = [y -1:4/(fs/f):1 1:-4/(fs/f):-1];
+    end
+
+%Load original files
+[audio_siren1, fs_siren1] = audioread('input/Part_4/original/mono/siren1.wav');
+[audio_siren2, fs_siren2] = audioread('input/Part_4/original/mono/siren2.wav');
+[audio_siren3, fs_siren3] = audioread('input/Part_4/original/mono/siren3.wav');
+[audio_siren4, fs_siren4] = audioread('input/Part_4/original/mono/siren4.wav');
+[audio_siren5, fs_siren5] = audioread('input/Part_4/original/mono/siren5.wav');
+
+%Generate spectrograms
+nsc = 1024;
+nov = floor(nsc/2);
+nff = max(256, 2^nextpow2(nsc));
+
+spectrogram(audio_siren5, hamming(nsc), nov, nff, fs_siren5, 'yaxis');
+
+%% Part 4 - Generate siren sound
+%f0, f1, period extracted from spectrograms
+gen_siren2 = generate_siren(375, 1172, 0.768-0.4053, fs_siren2, 6);
+gen_siren3 = generate_siren(421.9, 1359, 0.704-0.3627, fs_siren3, 6);
+gen_siren4 = generate_siren(562.5, 1549, 0.6507-0.3413, fs_siren4, 6);
+gen_siren5 = generate_siren(656.2, 1688, 0.5867-0.2987, fs_siren5, 6);					 
+</pre>
                      <!-- END CHANGES -->
                   </div>
                </div> 
@@ -764,8 +891,46 @@ std::ostream& operator<<(std::ostream& os, const std::vector<FFTSample>& samples
                   <div class="content monospaced">
                      <!-- MAKE CHANGES HERE: Part 4 Siren 5 Code -->
                      <pre>
-// Insert your code for Siren 5 here
-					 </pre>
+%% Part 4 - Sirens
+%Function to generate triangle wave siren
+function y = generate_siren(f0, f1, period, fs, duration)
+    y = [];
+    
+    while length(y) < (fs*duration)
+        %Calculate current frequency
+        curTime = length(y) / fs;
+        phase = mod(curTime, period) / (period/2);
+        if phase < 1
+            f = phase * (f1-f0) + f0;
+        else
+            f = (2 - phase) * (f1-f0) + f0;
+        end
+        
+        %Generate single triangle wave
+        y = [y -1:4/(fs/f):1 1:-4/(fs/f):-1];
+    end
+
+%Load original files
+[audio_siren1, fs_siren1] = audioread('input/Part_4/original/mono/siren1.wav');
+[audio_siren2, fs_siren2] = audioread('input/Part_4/original/mono/siren2.wav');
+[audio_siren3, fs_siren3] = audioread('input/Part_4/original/mono/siren3.wav');
+[audio_siren4, fs_siren4] = audioread('input/Part_4/original/mono/siren4.wav');
+[audio_siren5, fs_siren5] = audioread('input/Part_4/original/mono/siren5.wav');
+
+%Generate spectrograms
+nsc = 1024;
+nov = floor(nsc/2);
+nff = max(256, 2^nextpow2(nsc));
+
+spectrogram(audio_siren5, hamming(nsc), nov, nff, fs_siren5, 'yaxis');
+
+%% Part 4 - Generate siren sound
+%f0, f1, period extracted from spectrograms
+gen_siren2 = generate_siren(375, 1172, 0.768-0.4053, fs_siren2, 6);
+gen_siren3 = generate_siren(421.9, 1359, 0.704-0.3627, fs_siren3, 6);
+gen_siren4 = generate_siren(562.5, 1549, 0.6507-0.3413, fs_siren4, 6);
+gen_siren5 = generate_siren(656.2, 1688, 0.5867-0.2987, fs_siren5, 6);					 
+</pre>
                      <!-- END CHANGES -->
                   </div>
                </div> 

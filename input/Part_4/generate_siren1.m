@@ -12,7 +12,7 @@ t = 0 : 1/fs : time;
 
 % base frequency values
 lowf = 600;
-lowscale = 115;
+lowscale = 100;
 
 triangle = 0 : 1/fs : time;
 
@@ -43,11 +43,13 @@ for v = 1:5
     end
 end
 
+plot(soundarr);
+
 %display the spectrogram
-figure; spectrogram(soundarr,512,256,512,fs, 'yaxis');
+%figure; spectrogram(soundarr,512,256,512,fs, 'yaxis');
 
 %play the sound
-%sound(soundarr,fs);
+sound(soundarr,fs);
 
 %save the sound to file
-audiowrite('siren1.wav', soundarr, fs);
+%audiowrite('siren1.wav', soundarr, fs);
