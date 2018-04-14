@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <meta name="generator" content="AsciiDoc 8.6.9">
+      <title>HCI/CprE/ComS 575: Homework #5</title>
+      <link rel="stylesheet" href="./riak.css" type="text/css">
+   </head>
+   
+   <body class="article">
+      <div id="header">
+         <h1>HCI/CprE/ComS 575: Homework #5</h1>
+         <!-- MAKE CHANGES HERE: Student information -->
+         <span id="author">Your Name</span><br>
+         <span id="email" class="monospaced">&lt;
+         <a href="mailto:Your Email">Your Email</a>&gt;</span><br>
+         <!-- END CHANGES -->
+      </div>
+	  
+      <div id="content">
+	  
+	  <div id="preamble">
+				<div class="sectionbody">
+					<div class="paragraph">
+						<p>
+						List of Audio Libraries and References
+						</p>
+					</div>
+					<div class="paragraph">
+						<p>
+						The following list of C / C++ libraries and references for audio processing is provided for your convenience only.
+						You are not required to use any of these libraries / references for this homework.
+						<br><br>	
+						<ul>
+							<li class="level1">
+								<div class="li"> <a href="http://www.fftw.org/" class="urlextern" title="http://www.fftw.org/" rel="nofollow"> Fastest Fourier Transform in the West</a> library.</div>
+							</li>
+							<li class="level1">
+								<div class="li"> <a href="http://www.youtube.com/view_play_list?p=B24BC7956EE040CD" class="urlextern" title="http://www.youtube.com/view_play_list?p=B24BC7956EE040CD" rel="nofollow"> The Fourier Transform and its Applications: A Video Course</a>. </div>
+							</li>
+							<li class="level1">
+								<div class="li"> <a href="http://kissfft.sourceforge.net/" class="urlextern" title="http://kissfft.sourceforge.net/" rel="nofollow"> Keep It Simple, Stupid FFT</a> library.</div>
+							</li>
+							<li class="level1">
+								<div class="li"> <a href="https://www.audacityteam.org/" class="urlextern" title="https://www.audacityteam.org/" rel="nofollow"> Audacity</a>. Useful for analyzing raw audio (waves) and modifying audio files (ie. stereo <--> mono).</div>
+							</li>
+							<li class="level1">
+								<div class="li"> <a href="http://umlautllama.com/projects/pacdocs/" class="urlextern" title="http://umlautllama.com/projects/pacdocs/" rel="nofollow"> Programming for the Pac-Man or Pengo arcade platforms</a>. Contains information regarding the original Pac-Man hardware architecture, as well as descriptions of the sound ROMs.</div>
+							</li>
+							<li class="level1">
+								<div class="li"> <a href="http://www.cubeman.org/arcade-source/pacman.asm" class="urlextern" title="http://www.cubeman.org/arcade-source/pacman.asm" rel="nofollow"> Full Pac-Man Z80 disassembly code</a>. Use with caution.</div>
+							</li>
+							<li class="level1">
+								<div class="li"> <a href="http://clrhome.org/table/" class="urlextern" title="http://clrhome.org/table/" rel="nofollow"> Z80 full instruction set</a>. Use to read the disassembly above.</div>
+							</li>
+							<li class="level1">
+								<div class="li"> <a href="https://www.lomont.org/Software/Games/PacMan/PacmanEmulation.pdf" class="urlextern" title="https://www.lomont.org/Software/Games/PacMan/PacmanEmulation.pdf" rel="nofollow"> Pac-Man Emulation Guide</a>. Qualitative description of the Pac-Man ROM and hardware usage.</div>
+							</li>
+					</div>
+				</div>
+		</div>
+	  
+		<br>
+		<hr>
+		<br>
+	  
+	  
+		 <!-- PART 1A -->
+         <div class="sect1">
+            <h2 id="_part_1a">Part 1a</h2>
+            <div class="sectionbody">
+               <div class="paragraph">
+                  <p>
+				  Implement the Fast Fourier Transform in C or MATLAB. Note that you are <strong>not</strong> allowed to use 
+				  MATLAB's implementation nor any of the libraries linked above for this problem.
+                  </p>
+               </div>
+			   <div class="listingblock">
+                  <div class="title">Source</div>
+                  <div class="content monospaced">
+                     <!-- MAKE CHANGES HERE: Part 1a code -->
+                     <pre>
+nclude <complex>
+#include <vector>
+#include <iostream>
+
+using FFTSample = std::complex<double>;
+
+void fft(std::vector<FFTSample>& values);
+void ifft(std::vector<FFTSample>& values);
+
+void shuffle(std::vector<FFTSample>& values);
+void merge(std::vector<FFTSample>& values);
+void swap(FFTSample& a, FFTSample& b);
+size_t reverse(size_t in, size_t bits);
+
+std::ostream& operator<<(std::ostream& os, const std::vector<FFTSample>& samples);
+
+int main() {
+  const double sq2 = std::sqrt(2.)/2.;
+
+  std::vector<FFTSample> samples{
+    {0., 0.}, {sq2, 0.}, {1., 0.}, {sq2, 0.}, {0., 0.}, {-sq2, 0.}, {-1., 0.}, {-sq2, 0}
+  };
+
+  std::cout << "Performing FFT on input vector: " << samples << std::endl;
+
+  //In-place FFT
+  fft(samples);
+
+  std::cout << "\nFFT result vector: " << samples << std::endl;
+
+  //In-place Inverse FFT
+  ifft(samples);
+
+  std::cout << "\nIFFT result vector: " << samples << std::endl;
+
+  return 0;
+}
+
+void fft(std::vector<FFTSample>& values) {
+  //First, rearrange the input vector (in place)
+  shuffle(values);
+
+  //Second, perform merge
+  merge(values);
+
+  //That's it!
+}
+
+void ifft(std::vector<FFTSample>& values) {
+  //Conjugate input
+  for(auto& value : values) {
+    value = std::conj(value);
+  }
+
+  //Perform regular FFT
+  fft(values);
+
+  //Conjugate result, divide by N
+  for(auto& value : values) {
+    value = std::conj(value) / std::complex<double>(values.size(), 0.);
+  }
+}
+
+void shuffle(std::vector<FFTSample>& values) {
+  //Determine total number of bits
+  size_t bits, size = values.size();
+  for(bits = 0; size > 0; size >>= 1, ++bits);
+  --bits;
+
+  //Shuffle FFT input samples by swapping each sample with the value at the bit
+   //reversed index
+  for(size_t i = 0; i < values.size(); ++i) {
+    auto rev = reverse(i, bits);
+    if(i < rev) {
+      swap(values[i], values[rev]);
+    }
+  }
+}
+
+void merge(std::vector<FFTSample>& values) {
+  const double PI = 3.141592654;
+
+  for(size_t m = 2; m <= values.size(); m <<= 1) {
+    //Calculate twiddle factor
+    auto w = std::exp(std::complex<double>{0., -2. * PI / m});
+    std::complex<double> v{1., 0.};
+
+    //Butterfly merge
+    for(size_t k = 0; k < m/2; ++k) {
+      for(size_t i = 0; i < values.size(); i += m) {
+        //Calculate butterfly indicies
+        auto p = k + i;
+        auto q = p + m/2;
+
+        //Perform operations
+        auto a = values[p];
+        auto b = values[q] * v;
+        values[p] = a + b;
+        values[q] = a - b;
+      }
+      v *= w;
+    }
+  }
+}
+
+void swap(FFTSample& a, FFTSample& b) {
+  auto t = a;
+  a = b;
+  b = t;
+}
+
+size_t reverse(size_t in, size_t bits) {
+  size_t rev = 0;
+
+  for(auto i = 0; i < bits; ++i) {
+    rev <<= 1;
+    rev |= (in >> i) & 0x1;
+  }
+
+  return rev;
+}
+
+std::ostream& operator<<(std::ostream& os, const std::vector<FFTSample>& samples) {
+  os << "{";
+
+  if(!samples.empty()) {
+    for(auto i = 0; i < samples.size()-1; ++i) {
+      os << samples[i] << ", ";
+    }
+    os << samples.back();
+  }
+
+  os << "}";
+
+  return os;
+}					 
+</pre>
+                     <!-- END CHANGES -->
+                  </div>
+               </div>
+			   
+        <!-- PART 1B -->       
+		<div class="sect1">
+            <h2 id="_part_1b">Part 1b</h2>
+            <div class="sectionbody">
+                <div class="paragraph">
+                  <p>
+				  Using your implementation from Part A, compute the Discrete Fourier Transform of the following vector:
+				  </p>
+                </div>
+			    <div class="listingblock">
+						<div class="title">Vector 'x'</div>
+						<div class="content">
+							<pre><h4><tt>[0, 0.7071, 1, 0.7071, 0, -0.7071, -1, -0.7071]</tt></h4></pre>
+						</div>
+				</div>
+				<div class="paragraph">
+                  <p>
+				  <i>Note that you may use sqrt(2)/2 instead of 0.7071.</i>
+				  </p>
+                </div>
+			   <div class="listingblock">
+                  <div class="title">Result</div>
+                  <div class="content monospaced">
+                     <!-- MAKE CHANGES HERE: Part 1b results -->
+                     <pre>
+{(0,0), (-8.20414e-10,-4), (0,0), (-4.10207e-10,-2.05103e-10), (0,0), (1.14424e-17,-2.05103e-10), (0,0), (1.23062e-09,4)}
+					 
+</pre>
+                     <!-- END CHANGES -->
+                  </div>
+               </div>
+			   
+		<!-- PART 1C -->       
+		<div class="sect1">
+            <h2 id="_part_1b">Part 1c</h2>
+            <div class="sectionbody">
+                <div class="paragraph">
+                  <p>
+				  Compare your output from part 1b with the output generated by MATLAB's fft() method for the same vector 'x'. Include the result below, and any discrepancies.
+				  <br>
+				  You may also use one of the FFT libraries above, if you choose.
+				  </p>
+                </div>
+			   <div class="listingblock">
+                  <div class="title">Result & Analysis</div>
+                  <div class="content monospaced">
+                     <!-- MAKE CHANGES HERE: Part 1c results -->
+                     <pre>
+Columns 1 through 3
+
+   0.0000 + 0.0000i   0.0000 - 4.0000i   0.0000 + 0.0000i
+
+  Columns 4 through 6
+
+   0.0000 + 0.0000i   0.0000 + 0.0000i   0.0000 - 0.0000i
+
+  Columns 7 through 8
+
+   0.0000 + 0.0000i   0.0000 + 4.0000i
+
+//Notes: The result from my C++ implementation is printed in scientific notation with more precision than the MATLAB result. Otherwise, the results appear the same
+					 </pre>
+                     <!-- END CHANGES -->
+                  </div>
+               </div>
+        
+		<br>
+		<hr>
+		<br>
+		
+		<!-- PART 2A -->
+         <div class="sect2">
+            <h2 id="_part_2a">Part 2a</h2>
+            <div class="sectionbody">
+               <div class="paragraph">
+                  <p>
+				  Implement the <strong>Inverse</strong> Fast Fourier Transform in C or MATLAB. Note that you are <strong>not</strong> allowed to use 
+				  MATLAB's implementation nor any of the libraries linked above for this problem.
+                  </p>
+               </div>
+			   <div class="listingblock">
+                  <div class="title">Source</div>
+                  <div class="content monospaced">
+                     <!-- MAKE CHANGES HERE: Part 2a code -->
+                     <pre>
+#include <complex>
+#include <vector>
+#include <iostream>
+
+using FFTSample = std::complex<double>;
+
+void fft(std::vector<FFTSample>& values);
+void ifft(std::vector<FFTSample>& values);
+
+void shuffle(std::vector<FFTSample>& values);
+void merge(std::vector<FFTSample>& values);
+void swap(FFTSample& a, FFTSample& b);
+size_t reverse(size_t in, size_t bits);
+
+std::ostream& operator<<(std::ostream& os, const std::vector<FFTSample>& samples);
+
+int main() {
+  const double sq2 = std::sqrt(2.)/2.;
+
+  std::vector<FFTSample> samples{
+    {0., 0.}, {sq2, 0.}, {1., 0.}, {sq2, 0.}, {0., 0.}, {-sq2, 0.}, {-1., 0.}, {-sq2, 0}
+  };
+
+  std::cout << "Performing FFT on input vector: " << samples << std::endl;
+
+  //In-place FFT
+  fft(samples);
+
+  std::cout << "\nFFT result vector: " << samples << std::endl;
+
+  //In-place Inverse FFT
+  ifft(samples);
+
+  std::cout << "\nIFFT result vector: " << samples << std::endl;
+
+  return 0;
+}
+
+void fft(std::vector<FFTSample>& values) {
+  //First, rearrange the input vector (in place)
+  shuffle(values);
+
+  //Second, perform merge
+  merge(values);
+
+  //That's it!
+}
+
+void ifft(std::vector<FFTSample>& values) {
+  //Conjugate input
+  for(auto& value : values) {
+    value = std::conj(value);
+  }
+
+  //Perform regular FFT
+  fft(values);
+
+  //Conjugate result, divide by N
+  for(auto& value : values) {
+    value = std::conj(value) / std::complex<double>(values.size(), 0.);
+  }
+}
+
+void shuffle(std::vector<FFTSample>& values) {
+  //Determine total number of bits
+  size_t bits, size = values.size();
+  for(bits = 0; size > 0; size >>= 1, ++bits);
+  --bits;
+
+  //Shuffle FFT input samples by swapping each sample with the value at the bit
+   //reversed index
+  for(size_t i = 0; i < values.size(); ++i) {
+    auto rev = reverse(i, bits);
+    if(i < rev) {
+      swap(values[i], values[rev]);
+    }
+  }
+}
+
+void merge(std::vector<FFTSample>& values) {
+  const double PI = 3.141592654;
+
+  for(size_t m = 2; m <= values.size(); m <<= 1) {
+    //Calculate twiddle factor
+    auto w = std::exp(std::complex<double>{0., -2. * PI / m});
+    std::complex<double> v{1., 0.};
+
+    //Butterfly merge
+    for(size_t k = 0; k < m/2; ++k) {
+      for(size_t i = 0; i < values.size(); i += m) {
+        //Calculate butterfly indicies
+        auto p = k + i;
+        auto q = p + m/2;
+
+        //Perform operations
+        auto a = values[p];
+        auto b = values[q] * v;
+        values[p] = a + b;
+        values[q] = a - b;
+      }
+      v *= w;
+    }
+  }
+}
+
+void swap(FFTSample& a, FFTSample& b) {
+  auto t = a;
+  a = b;
+  b = t;
+}
+
+size_t reverse(size_t in, size_t bits) {
+  size_t rev = 0;
+
+  for(auto i = 0; i < bits; ++i) {
+    rev <<= 1;
+    rev |= (in >> i) & 0x1;
+  }
+
+  return rev;
+}
+
+std::ostream& operator<<(std::ostream& os, const std::vector<FFTSample>& samples) {
+  os << "{";
+
+  if(!samples.empty()) {
+    for(auto i = 0; i < samples.size()-1; ++i) {
+      os << samples[i] << ", ";
+    }
+    os << samples.back();
+  }
+
+  os << "}";
+
+  return os;
+}					 
+</pre>
+                     <!-- END CHANGES -->
+                  </div>
+               </div>
+			   
+        <!-- PART 2B -->       
+		<div class="sect2">
+            <h2 id="_part_2b">Part 2b</h2>
+            <div class="sectionbody">
+                <div class="paragraph">
+                  <p>
+				  Using your implementation from Part A, compute the inverse Discrete Fourier Transform of the following vector:
+				  </p>
+                </div>
+			    <div class="listingblock">
+						<div class="title">Vector 'X'</div>
+						<div class="content">
+							<pre><h4><tt>[0, -4i, 0, 0, 0, 0, 0, 4i]</tt></h4></pre>
+						</div>
+				</div>
+			   <div class="listingblock">
+                  <div class="title">Result</div>
+                  <div class="content monospaced">
+                     <!-- MAKE CHANGES HERE: Part 2b results -->
+                     <pre>
+{(0,-0), (0.707107,5.55112e-17), (1,1.16743e-16), (0.707107,-0), (0,-0), (-0.707107,-5.55112e-17), (-1,-1.16743e-16), (-0.707107,0)}
+</pre>
+                     <!-- END CHANGES -->
+                  </div>
+               </div>
+			   
+		<!-- PART 2C -->       
+		<div class="sect2">
+            <h2 id="_part_2b">Part 2c</h2>
+            <div class="sectionbody">
+                <div class="paragraph">
+                  <p>
+				  Compare your output from part 2b with the output generated by MATLAB's ifft() method for the same vector 'X'. Include the result below, and any discrepancies.
+				  <br>
+				  You may also use one of the IFFT libraries above, if you choose.
+				  </p>
+                </div>
+			   <div class="listingblock">
+                  <div class="title">Result & Analysis</div>
+                  <div class="content monospaced">
+                     <!-- MAKE CHANGES HERE: Part 2c results -->
+                     <pre>
+0    0.7071    1.0000    0.7071         0   -0.7071   -1.0000   -0.7071
+
+//Notes: Again, my implementation displays the numbers differently, but the results appear to be otherwise about the same
+					 </pre>
+                     <!-- END CHANGES -->
+                  </div>
+               </div>
+			   
+		<br>
+		<hr>
+		<br>
+			   
+		<!-- PART 3 -->
+        <div class="sect3">
+            <h2 id="_part_3">Part 3</h2>
+            <div class="sectionbody">
+               <div class="paragraph">
+                  <p>Using any FFT and IFFT  implementation, compute and plot the spectrograms for the following 5 audio files.
+				  
+				  <br>
+				  <br>
+				  
+				  Note that there are three versions of each file - the original sound from the Pac-Man hardware, in both <i>mono</i> and <i>stereo</i>, and a generated version. 
+				  <br>
+				  The generated wave will likely produce a cleaner spectrogram to analyze, but they are there for you to use as you see fit.
+					 
+                  </p>
+               </div>
+               <div class="level2">
+			<div class="table sectionedit4">
+				<table class="inline">
+					<thead>
+						<tr class="row0">
+							<th class="col0"> Audio Data </th>
+							<th class="col1"> Spectrogram </th>
+						</tr>
+					</thead>
+					<tr class="row1">
+						<td class="col0">
+							<audio class="media" controls="controls">
+								<source src="input/Part_3/original/stereo/01-extralife.wav" type="audio/wav" />
+								<a href="input/Part_3/original/stereo/01-extralife.wav" class="media mediafile mf_wav" title="01-extralife">01-extralife</a>
+							</audio>
+						</td>
+						<td class="col1">
+							<span class="image">
+								<!-- MAKE CHANGES HERE: Part 3 Spectrogram -->
+								<img src="output/Part_3/placeholder1.jpg" alt="Spectrogram1" width="100%">
+								<!-- END CHANGES -->
+                            </span>
+						</td>
+					</tr>
+					<tr class="row2">
+						<td class="col0">
+							<audio class="media" controls="controls">
+								<source src="input/Part_3/original/stereo/02-siren1.wav" type="audio/wav" />
+								<a href="input/Part_3/original/stereo/02-siren1.wav" class="media mediafile mf_wav" title="02-siren1">02-siren1</a>
+							</audio>
+						</td>
+						<td class="col1">
+							<span class="image">
+								<!-- MAKE CHANGES HERE: Part 3 Spectrogram -->
+								<img src="output/Part_3/placeholder2.jpg" alt="Spectrogram2" width="100%">
+								<!-- END CHANGES -->
+                            </span>
+						</td>
+					</tr>
+					<tr class="row3">
+						<td class="col0">
+							<audio class="media" controls="controls">
+								<source src="input/Part_3/original/stereo/03-fruiteaten.wav" type="audio/wav" />
+								<a href="input/Part_3/original/stereo/03-fruiteaten.wav" class="media mediafile mf_wav" title="03-fruiteaten">03-fruiteaten</a>
+							</audio>
+						</td>
+						<td class="col1">
+							<span class="image">
+								<!-- MAKE CHANGES HERE: Part 3 Spectrogram -->
+								<img src="output/Part_3/placeholder3.jpg" alt="Spectrogram3" width="100%">
+								<!-- END CHANGES -->
+                            </span>
+						</td>
+					</tr>
+					<tr class="row4">
+						<td class="col0">
+							<audio class="media" controls="controls">
+								<source src="input/Part_3/original/stereo/04-ghosteaten.wav" type="audio/wav" />
+								<a href="input/Part_3/original/stereo/04-ghosteaten.wav" class="media mediafile mf_wav" title="04-ghosteaten">04-ghosteaten</a>
+							</audio>
+						</td>
+						<td class="col1">
+							<span class="image">
+								<!-- MAKE CHANGES HERE: Part 3 Spectrogram -->
+								<img src="output/Part_3/placeholder4.jpg" alt="Spectrogram4" width="100%">
+								<!-- END CHANGES -->
+                            </span>
+						</td>
+					</tr>
+					<tr class="row5">
+						<td class="col0">
+							<audio class="media" controls="controls">
+								<source src="input/Part_3/original/stereo/05-pacmandeath.wav" type="audio/wav" />
+								<a href="input/Part_3/original/stereo/05-pacmandeath.wav" class="media mediafile mf_wav" title="05-pacmandeath">05-pacmandeath</a>
+							</audio>
+						</td>
+						<td class="col1">
+							<span class="image">
+								<!-- MAKE CHANGES HERE: Part 3 Spectrogram -->
+								<img src="output/Part_3/placeholder5.jpg" alt="Spectrogram3" width="100%">
+								<!-- END CHANGES -->
+                            </span>
+						</td>
+					</tr>
+				</table>
+			</div>
+			   <div class="listingblock">
+                  <div class="title">Source</div>
+                  <div class="content monospaced">
+                     <!-- MAKE CHANGES HERE: Part 3a code -->
+                     <pre>
+// Insert your code here
+					 </pre>
+                     <!-- END CHANGES -->
+                  </div>
+               </div>
+			   
+		<br>
+		<hr>
+		<br>
+			   
+        <!-- PART 4 -->
+        <div class="sect4">
+            <h2 id="_part_4">Part 4</h2>
+            <div class="sectionbody">
+               <div class="paragraph">
+                  <p>Given the code to synthesize siren #1 <i>(siren1.wav, siren1-generated.wav)</i>, modify it to synthesize the remaining 4 sirens.
+				  <br>
+				  Your synthesized waves should sound approximately like the provided samples - check both the frequencies used and the periodicity of the wave. 
+				  
+				  <br>
+				  <br>
+				  
+				  Again note that there are two versions of each file - <i>mono</i> and <i>stereo</i> versions. You are only expected to generate a <strong>mono</strong> version.				
+
+				 <br>
+				 <br>
+				 <i>Spectrograms are your friend!</i> Use them to get as similar as possible to the original wave.
+                  </p>
+               </div>
+               <div class="level2">
+			<div class="table sectionedit4">
+				<table class="inline">
+					<thead>
+						<tr class="row0">
+							<th class="col0"> Original </th>
+							<th class="col1"> Synthesized </th>
+						</tr>
+					</thead>
+					<tr class="row1">
+						<td class="col0">
+							<audio class="media" controls="controls">
+								<source src="input/Part_4/original/stereo/siren1.wav" type="audio/wav" />
+								<a href="input/Part_4/original/stereo/siren1.wav" class="media mediafile mf_wav" title="siren1">siren1</a>
+							</audio>
+						</td>
+						<td class="col1">
+							<audio class="media" controls="controls">
+								<source src="output/Part_4/siren1-generated.wav" type="audio/wav" />
+								<a href="output/Part_4/siren1-generated.wav" class="media mediafile mf_wav" title="siren1-generated">siren1-generated</a>
+							</audio>
+						</td>
+					</tr>
+					<tr class="row2">
+						<td class="col0">
+							<audio class="media" controls="controls">
+								<source src="input/Part_4/original/stereo/siren2.wav" type="audio/wav" />
+								<a href="input/Part_4/original/stereo/siren2.wav" class="media mediafile mf_wav" title="siren2">siren2</a>
+							</audio>
+						</td>
+						<td class="col1">
+							<!-- MAKE CHANGES HERE: Part 4 Siren2 -->
+							<audio class="media" controls="controls">
+								<source src="output/Part_4/siren2-generated.wav" type="audio/wav" />
+								<a href="output/Part_4/siren2-generated.wav" class="media mediafile mf_wav" title="siren2-generated">siren2-generated</a>
+							</audio>
+							<!-- END CHANGES -->
+						</td>
+					</tr>
+					<tr class="row3">
+						<td class="col0">
+							<audio class="media" controls="controls">
+								<source src="input/Part_4/original/stereo/siren3.wav" type="audio/wav" />
+								<a href="input/Part_4/original/stereo/siren3.wav" class="media mediafile mf_wav" title="siren3">siren3</a>
+							</audio>
+						</td>
+						<td class="col1">
+							<!-- MAKE CHANGES HERE: Part 4 Siren3 -->
+							<audio class="media" controls="controls">
+								<source src="output/Part_4/siren3-generated.wav" type="audio/wav" />
+								<a href="output/Part_4/siren3-generated.wav" class="media mediafile mf_wav" title="siren3-generated">siren3-generated</a>
+							</audio>
+							<!-- END CHANGES -->
+						</td>
+					</tr>
+					<tr class="row4">
+						<td class="col0">
+							<audio class="media" controls="controls">
+								<source src="input/Part_4/original/stereo/siren4.wav" type="audio/wav" />
+								<a href="input/Part_4/original/stereo/siren4.wav" class="media mediafile mf_wav" title="siren4">siren4</a>
+							</audio>
+						</td>
+						<td class="col1">
+							<!-- MAKE CHANGES HERE: Part 3 Siren4 -->
+							<audio class="media" controls="controls">
+								<source src="output/Part_4/siren4-generated.wav" type="audio/wav" />
+								<a href="output/Part_4/siren4-generated.wav" class="media mediafile mf_wav" title="siren4-generated">siren4-generated</a>
+							</audio>
+							<!-- END CHANGES -->
+						</td>
+					</tr>
+					<tr class="row5">
+						<td class="col0">
+							<audio class="media" controls="controls">
+								<source src="input/Part_4/original/stereo/siren5.wav" type="audio/wav" />
+								<a href="input/Part_4/original/stereo/siren5.wav" class="media mediafile mf_wav" title="siren5">siren5</a>
+							</audio>
+						</td>
+						<td class="col1">
+							<!-- MAKE CHANGES HERE: Part 3 Siren5 -->
+							<audio class="media" controls="controls">
+								<source src="output/Part_4/siren5-generated.wav" type="audio/wav" />
+								<a href="output/Part_4/siren5-generated.wav" class="media mediafile mf_wav" title="siren5-generated">siren5-generated</a>
+							</audio>
+							<!-- END CHANGES -->
+						</td>
+					</tr>
+				</table>
+			</div>
+			   <div class="listingblock">
+                  <div class="title">Source: Siren 2</div>
+                  <div class="content monospaced">
+                     <!-- MAKE CHANGES HERE: Part 4 Siren 2 Code -->
+                     <pre>
+// Insert your code for Siren 2 here
+					 </pre>
+                     <!-- END CHANGES -->
+                  </div>
+               </div>
+			   
+				<div class="listingblock">
+                  <div class="title">Source: Siren 3</div>
+                  <div class="content monospaced">
+                     <!-- MAKE CHANGES HERE: Part 4 Siren 3 Code -->
+                     <pre>
+// Insert your code for Siren 3 here
+					 </pre>
+                     <!-- END CHANGES -->
+                  </div>
+               </div> 			   
+			   
+			   <div class="listingblock">
+                  <div class="title">Source: Siren 4</div>
+                  <div class="content monospaced">
+                     <!-- MAKE CHANGES HERE: Part 4 Siren 4 Code -->
+                     <pre>
+// Insert your code for Siren 4 here
+					 </pre>
+                     <!-- END CHANGES -->
+                  </div>
+               </div> 
+			   
+			   <div class="listingblock">
+                  <div class="title">Source: Siren 5</div>
+                  <div class="content monospaced">
+                     <!-- MAKE CHANGES HERE: Part 4 Siren 5 Code -->
+                     <pre>
+// Insert your code for Siren 5 here
+					 </pre>
+                     <!-- END CHANGES -->
+                  </div>
+               </div> 
+		 	   
+		<br>
+		<hr>
+		<br>
+					 
+		 <!-- PART 5 -->
+		 <div class="sect2">
+            <h2 id="_part_5">Part 5</h2>
+            <div class="sectionbody">
+               <div class="paragraph">
+                  <p>Synthesize the Extra Life <i>(extralife.wav)</i> sound.
+				  <br>
+				  <strong>Do not</strong> use the original version of the sound to synthesize the new one - instead, generate it from scratch, similar to the process used in Part 4.
+				    Your synthesized wave should sound approximately like the provided sample - in this case, check the frequencies, the periodicity of the sound, and the amplitude of the wave.
+				  
+				  <br>
+				  <br>
+				  
+				  Again, both <i>mono</i> and <i>stereo</i> versions are available. You are only expected to generate a <strong>mono</strong> version.
+				  
+				  <br>
+				  <br>
+                  
+				  Make heavy use of spectrogram analysis to judge the quality of your wave, as compared to the original wave.
+				  </p>
+               </div>
+               <div class="table sectionedit4">
+				<table class="inline">
+					<thead>
+						<tr class="row0">
+							<th class="col0"> Original </th>
+							<th class="col1"> Synthesized </th>
+						</tr>
+					</thead>
+					<tr class="row1">
+						<td class="col0">
+							<audio class="media" controls="controls">
+								<source src="input/Part_5/original/stereo/extralife.wav" type="audio/wav" />
+								<a href="input/Part_5/original/stereo/extralife.wav" class="media mediafile mf_wav" title="extralife">extralife</a>
+							</audio>
+						</td>
+						<td class="col1">
+							<!-- MAKE CHANGES HERE: Part 5 Extra Life -->
+							<audio class="media" controls="controls">
+								<source src="output/Part_5/extralife-generated.wav" type="audio/wav" />
+								<a href="output/Part_5/extralife-generated.wav" class="media mediafile mf_wav" title="extralife-generated">extralife-generated</a>
+							</audio>
+							<!-- END CHANGES -->
+						</td>
+					</tr>
+				</table>
+				</div>
+			   <div class="listingblock">
+                  <div class="title">Source</div>
+                  <div class="content monospaced">
+                     <!-- MAKE CHANGES HERE: Part 5 code -->
+                     <pre>
+// Insert your code here
+					 </pre>
+                     <!-- END CHANGES -->
+                  </div>
+               </div>
+			   
+		<br>
+		<hr>
+		<br>
+		
+        <h1 id="_ec">Extra Credit</h1>		
+		
+		<!-- PART 6 -->	   
+		<div class="sect2">
+            <h2 id="_part_6">Part 6</h2>
+            <div class="sectionbody">
+               <div class="paragraph">
+                  <p>Repeat Part 5, but this time for the Fruit Eaten <i>(fruiteaten.wav)</i>, Ghost Eaten <i>(ghosteaten.wav)</i>, and Death Bloop <i>(pacmandeath.wav)</i> sounds.
+				  
+				  <br>
+				  <br>
+				  
+				  All the same restrictions apply.
+                  </p>
+               </div>
+               <div class="table sectionedit4">
+				<table class="inline">
+					<thead>
+						<tr class="row0">
+							<th class="col0"> Original </th>
+							<th class="col1"> Synthesized </th>
+						</tr>
+					</thead>
+					<tr class="row1">
+						<td class="col0">
+							<audio class="media" controls="controls">
+								<source src="input/Part_6/original/stereo/fruiteaten.wav" type="audio/wav" />
+								<a href="input/Part_6/original/stereo/fruiteaten.wav" class="media mediafile mf_wav" title="fruiteaten">fruiteaten</a>
+							</audio>
+						</td>
+						<td class="col1">
+							<!-- MAKE CHANGES HERE: Part 6 Fruit Eaten -->
+							<audio class="media" controls="controls">
+								<source src="output/Part_6/fruiteaten-generated.wav" type="audio/wav" />
+								<a href="output/Part_6/fruiteaten-generated.wav" class="media mediafile mf_wav" title="fruiteaten-generated">fruiteaten-generated</a>
+							</audio>
+							<!-- END CHANGES -->
+						</td>
+					</tr>
+					<tr class="row2">
+						<td class="col0">
+							<audio class="media" controls="controls">
+								<source src="input/Part_6/original/stereo/ghosteaten.wav" type="audio/wav" />
+								<a href="input/Part_6/original/stereo/ghosteaten.wav" class="media mediafile mf_wav" title="ghosteaten">ghosteaten</a>
+							</audio>
+						</td>
+						<td class="col1">
+							<!-- MAKE CHANGES HERE: Part 6 Ghost Eaten -->
+							<audio class="media" controls="controls">
+								<source src="output/Part_6/ghosteaten-generated.wav" type="audio/wav" />
+								<a href="output/Part_6/ghosteaten-generated.wav" class="media mediafile mf_wav" title="ghosteaten-generated">ghosteaten-generated</a>
+							</audio>
+							<!-- END CHANGES -->
+						</td>
+					</tr>
+					<tr class="row3">
+						<td class="col0">
+							<audio class="media" controls="controls">
+								<source src="input/Part_6/original/stereo/pacmandeath.wav" type="audio/wav" />
+								<a href="input/Part_6/original/stereo/pacmandeath.wav" class="media mediafile mf_wav" title="pacmandeath">pacmandeath</a>
+							</audio>
+						</td>
+						<td class="col1">
+							<!-- MAKE CHANGES HERE: Part 6 Death Bloop -->
+							<audio class="media" controls="controls">
+								<source src="output/Part_6/pacmandeath-generated.wav" type="audio/wav" />
+								<a href="output/Part_6/pacmandeath-generated.wav" class="media mediafile mf_wav" title="pacmandeath-generated">pacmandeath-generated</a>
+							</audio>
+							<!-- END CHANGES -->
+						</td>
+					</tr>
+				</table>
+				</div>
+			   <div class="listingblock">
+                  <div class="title">Source: Fruit Eaten</div>
+                  <div class="content monospaced">
+                     <!-- MAKE CHANGES HERE: Part 6 code: Fruit Eaten -->
+                     <pre>
+// Insert your code for Fruit Eaten here
+					 </pre>
+                     <!-- END CHANGES -->
+                  </div>
+               </div>
+			   <div class="listingblock">
+                  <div class="title">Source: Ghost Eaten</div>
+                  <div class="content monospaced">
+                     <!-- MAKE CHANGES HERE: Part 6 code: Ghost Eaten -->
+                     <pre>
+// Insert your code for Ghost Eaten here
+					 </pre>
+                     <!-- END CHANGES -->
+                  </div>
+               </div>
+			   <div class="listingblock">
+                  <div class="title">Source: Death Bloop</div>
+                  <div class="content monospaced">
+                     <!-- MAKE CHANGES HERE: Part 6 code: Death Bloop -->
+                     <pre>
+// Insert your code for Death Bloop here
+					 </pre>
+                     <!-- END CHANGES -->
+                  </div>
+               </div>
+			   
+      <div id="footer">
+         <div id="footer-text">
+            Last updated 2018-03-29
+         </div>
+      </div>
+   </body>
+</html>
