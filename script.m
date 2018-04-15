@@ -44,4 +44,40 @@ nsc = 1024;
 nov = floor(nsc/2);
 nff = max(256, 2^nextpow2(nsc));
 
+figure;
 spectrogram(audio_life, hamming(nsc), nov, nff, fs_life, 'yaxis');
+
+%% Part 5 - Generate sound
+ding_dur = 0.2;
+ding_count = 10;
+decay = 0.26;
+ding = {};
+ding{1} = generate_ding(375, decay, fs_life, ding_dur)*0.75;
+ding{2} = generate_ding(750, decay, fs_life, ding_dur)*0.1;
+ding{3} = generate_ding(1500, decay, fs_life, ding_dur)*1;
+ding{4} = generate_ding(3000, decay, fs_life, ding_dur)*0.5;
+ding{5} = generate_ding(9000, decay, fs_life, ding_dur)*0.25;
+ding{6} = generate_ding(15000, decay, fs_life, ding_dur)*0.1;
+
+single_ding = [];
+
+%Pad lengths with 0 to match and sum
+len = 0;
+for i = 1:length(ding)
+    len = max(len, length(ding{i}));
+end
+for i = 1:length(ding)
+    ding{i} = [ding{i} zeros(1, len - length(ding{i}))];
+    if length(single_ding) == 0
+        single_ding = ding{i};
+    else
+        single_ding = single_ding + ding{i};
+    end
+end
+single_ding = single_ding / length(ding);
+
+full_ding = [];
+for i = 1:ding_count
+    full_ding = [full_ding single_ding];
+end
+sound(full_ding, fs_life);

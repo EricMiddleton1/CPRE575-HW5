@@ -991,8 +991,54 @@ gen_siren5 = generate_siren(656.2, 1688, 0.5867-0.2987, fs_siren5, 6);
                   <div class="content monospaced">
                      <!-- MAKE CHANGES HERE: Part 5 code -->
                      <pre>
-// Insert your code here
-					 </pre>
+%Function to generate decaying triangle wave
+function y = generate_ding(f, decay, fs, duration)
+    y = [];
+    
+    while length(y) < (fs*duration)
+        %Calculate current amplitude
+        a = 1-length(y)/(decay*fs);
+        
+        %Generate single triangle wave
+        triangle = [-1:4/(fs/f):1 1:-4/(fs/f):-1];
+        y = [y a*triangle];
+    end
+
+%% Part 5 - Generate sound
+ding_dur = 0.2;
+ding_count = 10;
+decay = 0.26;
+ding = {};
+ding{1} = generate_ding(375, decay, fs_life, ding_dur)*0.75;
+ding{2} = generate_ding(750, decay, fs_life, ding_dur)*0.1;
+ding{3} = generate_ding(1500, decay, fs_life, ding_dur)*1;
+ding{4} = generate_ding(3000, decay, fs_life, ding_dur)*1;
+ding{5} = generate_ding(9000, decay, fs_life, ding_dur)*0.25;
+ding{6} = generate_ding(15000, decay, fs_life, ding_dur)*0.1;
+
+single_ding = [];
+
+%Pad lengths with 0 to match and sum
+len = 0;
+for i = 1:length(ding)
+    len = max(len, length(ding{i}));
+end
+for i = 1:length(ding)
+    ding{i} = [ding{i} zeros(1, len - length(ding{i}))];
+    if length(single_ding) == 0
+        single_ding = ding{i};
+    else
+        single_ding = single_ding + ding{i};
+    end
+end
+single_ding = single_ding / length(ding);
+
+full_ding = [];
+for i = 1:ding_count
+    full_ding = [full_ding single_ding];
+end
+sound(full_ding, fs_life);					 
+</pre>
                      <!-- END CHANGES -->
                   </div>
                </div>
